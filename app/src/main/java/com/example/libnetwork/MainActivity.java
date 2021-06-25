@@ -1,14 +1,17 @@
 package com.example.libnetwork;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.arch.core.executor.ArchTaskExecutor;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
-import android.os.UserManager;
 import android.util.Log;
 import android.view.View;
 
+import com.alibaba.fastjson.TypeReference;
 import com.example.libnetwork.bean.Feed;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -22,6 +25,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 request1();
+            }
+        });
+        findViewById(R.id.request2).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                request2();
             }
         });
     }
@@ -40,4 +49,24 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    @SuppressLint("RestrictedApi")
+    public void request2() {
+        ArchTaskExecutor.getIOThreadExecutor().execute(new Runnable() {
+            @Override
+            public void run() {
+                Request request = ApiService.get("/feeds/queryHotFeedsList")
+                        .addParam("feedType", "all")
+                        .addParam("userId", 0)
+                        .addParam("feedId", 0)
+                        .addParam("pageCount", 10)
+                        .responseType(new TypeReference<ArrayList<Feed>>() {
+                        }.getType());//xuquxning
+
+                ApiResponse<ArrayList<Feed>> response = request.execute();
+                Log.e("======", "======response:" + response.body);
+            }
+        });
+    }
+
 }

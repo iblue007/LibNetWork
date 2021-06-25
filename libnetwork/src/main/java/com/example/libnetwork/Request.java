@@ -33,9 +33,20 @@ public abstract class Request<T, R extends Request> {
     public static final int NET_ONLY = 3;
     //先访问网络，成功后缓存到本地
     public static final int NET_CACHE = 4;
+    private Type mType;
 
     public Request(String url) {
         mUrl = url;
+    }
+
+    public R responseType(Type type) {
+        mType = type;
+        return (R) this;
+    }
+
+    public R responseType(Class claz) {
+        mType = claz;
+        return (R) this;
     }
 
     @IntDef({CACHE_ONLY, CACHE_FIRST, NET_ONLY, NET_CACHE})
@@ -72,10 +83,22 @@ public abstract class Request<T, R extends Request> {
         return (R) this;
     }
 
-    public void execute() {
-
+    //同步请求
+    public ApiResponse<T> execute() {
+        if (mType == null) {
+            throw new RuntimeException("同步方法，response 返回值类型必须设置");
+        }
+        ApiResponse<T> result = null;
+        try {
+            Response response = getCall().execute();
+            result = parseResponse(response, null);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 
+    //异步请求
     public void execute(final JsonCallback<T> callback) {//异步请求
         getCall().enqueue(new Callback() {
             @Override
@@ -111,6 +134,8 @@ public abstract class Request<T, R extends Request> {
                     //得到泛型的实例类
                     Type argument = type.getActualTypeArguments()[0];
                     result.body = (T) sConvert.convert(content, argument);
+                } else if (mType != null) {
+                    result.body = (T) sConvert.convert(content, mType);
                 } else {
                     Log.e("request---", "--parseResponse:无法解析");
                 }
