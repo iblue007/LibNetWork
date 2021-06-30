@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
                 .addParam("feedType", "all")
                 .addParam("userId", 0)
                 .addParam("feedId", 0)
+                .cacheStrategy(Request.CACHE_FIRST)
                 .addParam("pageCount", 10);
 
         request.execute(new JsonCallback<List<Feed>>() {
@@ -60,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
                         .addParam("userId", 0)
                         .addParam("feedId", 0)
                         .addParam("pageCount", 10)
+                        .cacheStrategy(Request.CACHE_ONLY)
                         .responseType(new TypeReference<ArrayList<Feed>>() {
                         }.getType());//xuquxning
 
